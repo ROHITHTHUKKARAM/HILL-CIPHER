@@ -1,11 +1,9 @@
-# CRYPTOGRAPHY
-HILL CIPHER
-EX. NO: 1(C) AIM:
+# HILL CIPHER
+# EX. NO: 1(C) IMPLEMENTATION OF HILL CIPHER
  
+## AIM
 
-IMPLEMENTATION OF HILL CIPHER
- 
-## To write a C program to implement the hill cipher substitution techniques.
+To write a C program to implement the hill cipher substitution techniques.
 
 ## DESCRIPTION:
 
@@ -30,93 +28,57 @@ STEP-5: Combine all these groups to get the complete cipher text.
 
 ## PROGRAM 
 ```
-PROGRAM:
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-// Hill cipher key matrix and its inverse
-int keymat[3][3] = { { 1, 2, 1 }, { 2, 3, 2 }, { 2, 2, 1 } };
-int invkeymat[3][3] = { { -1, 0, 1 }, { 2, -1, 0 }, { -2, 2, -1 } };
-// Key array for mapping
-char key[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-// Encode function
-void encode(char a, char b, char c, char *ret) {
-    int x, y, z;
-    int posa = (int) a - 65;
-    int posb = (int) b - 65;
-    int posc = (int) c - 65;
-    x = posa * keymat[0][0] + posb * keymat[1][0] + posc * keymat[2][0];
-    y = posa * keymat[0][1] + posb * keymat[1][1] + posc * keymat[2][1];
-    z = posa * keymat[0][2] + posb * keymat[1][2] + posc * keymat[2][2];
-    ret[0] = key[x % 26];
-    ret[1] = key[y % 26];
-    ret[2] = key[z % 26];
-    ret[3] = '\0';
-}
-// Decode function
-void decode(char a, char b, char c, char *ret) {
-    int x, y, z;
-    int posa = (int) a - 65;
-    int posb = (int) b - 65;
-    int posc = (int) c - 65;
-    x = posa * invkeymat[0][0] + posb * invkeymat[1][0] + posc * invkeymat[2][0];
-    y = posa * invkeymat[0][1] + posb * invkeymat[1][1] + posc * invkeymat[2][1];
-    z = posa * invkeymat[0][2] + posb * invkeymat[1][2] + posc * invkeymat[2][2];
-    ret[0] = key[(x % 26 < 0) ? (26 + x % 26) : (x % 26)];
-    ret[1] = key[(y % 26 < 0) ? (26 + y % 26) : (y % 26)];
-    ret[2] = key[(z % 26 < 0) ? (26 + z % 26) : (z % 26)];
-    ret[3] = '\0';
-}
-int main() {
-    char msg[1000];
-    char enc[1000] = "";
-    char dec[1000] = "";
-    int n;
-    strcpy(msg, "haritha");
-    printf("Simulation of Hill Cipher\n");
-    printf("Input message : %s\n", msg);
-    // Convert message to uppercase
-    for (int i = 0; i < strlen(msg); i++) {
-        msg[i] = toupper(msg[i]);
-    }
-    // Remove spaces (if needed)
-    n = strlen(msg) % 3;
-    // Append padding text 'X' if needed
-    if (n != 0) {
-        for (int i = 1; i <= (3 - n); i++) {
-            strcat(msg, "X");
-        }
-    }
-    printf("Padded message : %s\n", msg);
-    // Encoding
-    for (int i = 0; i < strlen(msg); i += 3) {
-        char a = msg[i];
-        char b = msg[i + 1];
-        char c = msg[i + 2];
-        char ret[4];
-        encode(a, b, c, ret);
-        strcat(enc, ret);
-    }
-    printf("Encoded message : %s\n", enc);
-    // Decoding
-    for (int i = 0; i < strlen(enc); i += 3) {
-        char a = enc[i];
-        char b = enc[i + 1];
-        char c = enc[i + 2];
-        char ret[4];
-        decode(a, b, c, ret);
-        strcat(dec, ret);
-    }
-    printf("Decoded message : %s\n", dec);
-    return 0;
-}
+import numpy as np
+
+def text_to_numbers(text):
+    return [ord(char) - ord('A') for char in text]
+
+def numbers_to_text(numbers):
+    return ''.join(chr(num + ord('A')) for num in numbers)
+
+def hill_cipher_encrypt(plaintext, key):
+    n = len(key)
+    plaintext = plaintext.upper().replace(" ", "")
+    while len(plaintext) % n != 0:
+        plaintext += 'X'  # Padding with 'X'
+    
+    text_numbers = text_to_numbers(plaintext)
+    key_matrix = np.array(key)
+    
+    encrypted_numbers = []
+    for i in range(0, len(text_numbers), n):
+        block = np.array(text_numbers[i:i+n]).reshape(n, 1)
+        encrypted_block = np.dot(key_matrix, block) % 26
+        encrypted_numbers.extend(encrypted_block.flatten())
+    
+    return numbers_to_text(encrypted_numbers)
+
+def hill_cipher_decrypt(ciphertext, key):
+    n = len(key)
+    key_matrix = np.array(key)
+    key_inverse = np.linalg.inv(key_matrix) * np.linalg.det(key_matrix)
+    key_inverse = np.round(key_inverse).astype(int) % 26  # Modular inverse approximation
+    
+    text_numbers = text_to_numbers(ciphertext)
+    decrypted_numbers = []
+    for i in range(0, len(text_numbers), n):
+        block = np.array(text_numbers[i:i+n]).reshape(n, 1)
+        decrypted_block = np.dot(key_inverse, block) % 26
+        decrypted_numbers.extend(decrypted_block.flatten())
+    
+    return numbers_to_text(decrypted_numbers)
+
+if __name__ == "__main__":
+    plaintext = input("Enter plaintext: ")
+    key = [[6, 24, 1], [13, 16, 10], [20, 17, 15]]  # Example key matrix
+    ciphertext = hill_cipher_encrypt(plaintext, key)
+    print("Encrypted Text:", ciphertext)
+    decrypted_text = hill_cipher_decrypt(ciphertext, key)
+    print("Decrypted Text:", decrypted_text)
+
 ```
-
 ## OUTPUT
-![image](https://github.com/user-attachments/assets/768961a1-991e-4137-a1c3-0960db4db80b)
-
-
-
+![Screenshot 2025-03-27 090723](https://github.com/user-attachments/assets/ea5637f2-429f-4f37-bdf7-7f6710c5a152)
 
 ## RESULT
-The program is executed successfully.
+Thus, a python program is implement for hill cipher substitution techniques.
